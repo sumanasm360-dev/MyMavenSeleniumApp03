@@ -5,13 +5,6 @@ pipeline {
         maven 'maven'
     }
 
-    stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'master', url: 'https://github.com/sumanasm360-dev/MyMavenSeleniumApp03'
-            }
-        }
-
         stage('Build') {
             steps {
                 sh 'mvn clean package'
