@@ -5,6 +5,10 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
 import java.time.Duration;
 
 public class App {
@@ -12,31 +16,47 @@ public class App {
     public static void main(String[] args) {
 
         WebDriver driver = new ChromeDriver();
-
         driver.manage().window().maximize();
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
 
-        driver.get("https://automationexercise.com");
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-        // Login page
-        driver.findElement(By.linkText("Signup / Login")).click();
-
-        driver.findElement(By.name("email")).sendKeys("sumana.selenium@gmail.com");
-        driver.findElement(By.name("password")).sendKeys("test123");
-
-        driver.findElement(By.xpath("//button[text()='Login']")).click();
-
-        // Open products
         driver.get("https://automationexercise.com/products");
 
-        // Scroll down to products
-        JavascriptExecutor js = (JavascriptExecutor) driver;
-        js.executeScript("window.scrollBy(0,600)");
+        // Search product
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("search_product")))
+                .sendKeys("Men Tshirt");
 
-        // Click Add to Cart using JavaScript (avoids ad blocking)
-        WebElement addToCart = driver.findElement(By.xpath("(//a[contains(text(),'Add to cart')])[1]"));
-        js.executeScript("arguments[0].click();", addToCart);
+        driver.findElement(By.id("submit_search")).click();
 
-        System.out.println("Product added successfully!");
+        // Locate product
+        WebElement product = wait.until(
+                ExpectedConditions.visibilityOfElementLocated(
+                        By.cssSelector("a[data-product-id='2']")
+                )
+        );
+
+        // Hover on product
+        Actions actions = new Actions(driver);
+        actions.moveToElement(product).perform();
+
+        // Scroll to element (avoids ad interception)
+        ((JavascriptExecutor) driver).executeScript(
+                "arguments[0].scrollIntoView(true);", product);
+
+        // Click Add to Cart
+        wait.until(ExpectedConditions.elementToBeClickable(product)).click();
+
+        // Click View Cart
+        WebElement viewCart = wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        By.cssSelector("#cartModal a[href='/view_cart']")
+                )
+        );
+
+        viewCart.click();
+
+        System.out.println("Navigated to Cart page successfully");
+
+        driver.quit();
     }
 }
